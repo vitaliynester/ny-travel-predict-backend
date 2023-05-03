@@ -1,7 +1,8 @@
 import math
 from math import radians, cos, sin, asin, sqrt
 
-import keras
+import numpy as np
+import onnxruntime as rt
 import pandas as pd
 
 from models import RequestModel
@@ -54,6 +55,7 @@ def create_dataframe(model: RequestModel) -> pd.DataFrame:
 
 
 def predict(df: pd.DataFrame) -> int:
-    model = keras.models.load_model("model.hdf5", compile=False)
-    pred = model.predict(df, verbose=False)
-    return int(math.exp(pred[0]) - 1)
+    sess = rt.InferenceSession("model.onnx")
+    input_tensor = df.to_numpy()
+    output = sess.run([], {'input_2': input_tensor.astype(np.float32)})
+    return int(math.exp(output[0]) - 1)
